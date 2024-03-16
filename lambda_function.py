@@ -1,30 +1,20 @@
 import json
-import boto3
-import random
 
-sqs_client = boto3.client('sqs')
-QUEUE_URL = 'https://sqs.ap-south-1.amazonaws.com/767398009454/aws-de-queue'  # replace with your SQS Queue URL
-
-def generate_sales_order():
-    return {
-        "order_id": random.randint(1000, 9999),
-        "product_id": random.randint(100, 999),
-        "quantity": random.randint(1, 100),
-        "price": round(random.uniform(10.0, 500.0), 2)
-    }
+def process_sales_order(sales_order):
+    print(sales_order)  # Replace with your actual processing logic.
 
 def lambda_handler(event, context):
-    i=0
-    while(i<200):
-        sales_order = generate_sales_order()
-        print(sales_order)
-        sqs_client.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps(sales_order)
-        )
-        i += 1
+    # Loop through each message that triggered the lambda function
+    print("Starting SQS Batch Process")
+    print("Messages received in current batch = ",len(event['Records']))
+    print("Event Received : ", event)
     
+    for record in event['Records']:
+        sales_order = json.loads(record['body'])
+        process_sales_order(sales_order)
+
+    print("Ending SQS Batch Process")
     return {
         'statusCode': 200,
-        'body': json.dumps('Sales order data published to SQS!')
+        'body': json.dumps('Processed sales orders from SQS!')
     }
